@@ -7,3 +7,6 @@ reference
 
 **PIXI.Sprite**  
 [https://pixijs.download/dev/docs/PIXI.Sprite.html](https://pixijs.download/dev/docs/PIXI.Sprite.html)  
+
+**[Question] How do I cap framerate to, say, 30 FPS**  
+[https://github.com/pixijs/pixi.js/issues/5250](https://github.com/pixijs/pixi.js/issues/5250)  
