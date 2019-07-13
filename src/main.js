@@ -1,6 +1,6 @@
 const WIDTH = 480;
 const HEIGHT = 320;
-const ASSET_BG = "images/sky_bg.jpg";
+const APP_FPS = 30;
 
 // init
 let app = new PIXI.Application({
@@ -11,10 +11,12 @@ let canvas = document.getElementById("canvas");
 canvas.appendChild(app.view);
 app.renderer.backgroundColor = 0x000000;
 app.stage.interactive = true;
-let bg;
+app.ticker.remove(app.render, app);
+const fpsDelta = 60 / APP_FPS;
 
+let bg;
 let snow;
-let anim_speed = 0.5;
+let elapsedTime = 0;
 
 let container_bg = new PIXI.Container();
 container_bg.x = 0;
@@ -31,15 +33,32 @@ container.pivot.y = 0;
 container.interactive = true;
 app.stage.addChild(container);
 
+// asset property
+const ASSET_BG = "images/sky_bg.jpg";
+const ASSET_SNOW = "images/snow_07.png";
+
 // snow property
+const ROTATE_LEFT = 1;
+const ROTATE_RIGHT = 2;
+const MAX_NUM = 10;
 const MAX_SCALE = 5;
 const MAX_ACCEL = 5;
 const MIN_ALPHA = 0.5;
 const MAX_ALPHA = 1;
+const MAX_RADIUS = 5;
+const MIN_RADIUS = 1;
+let xNum,
+	yNum,
+	scaleNum,
+	accelNum,
+	angleNum,
+	rotateDirecNum,
+	alphaNum,
+	radiusNum;
 
 PIXI.loader
 	.add("bg_data", ASSET_BG)
-	.add("snow_data", "images/snow_07.png")
+	.add("snow_data", ASSET_SNOW)
 	.load(onAssetsLoaded);
 
 /**
@@ -89,48 +108,89 @@ function onAssetsLoaded(loader, res) {
  */
 function initSnow() {
 	// x position
-	let xNum = Math.floor(Math.random() * WIDTH + 1);
+	xNum = Math.floor(Math.random() * WIDTH + 1);
 	snow.x = xNum;
 
 	// y position
-	let yNum = -Math.floor(Math.random() * 100 + 1);
+	yNum = -Math.floor(Math.random() * 100 + 1);
 	snow.y = yNum;
 
 	// scale
-	let scaleNum = Math.floor(Math.random() * MAX_SCALE + 1);
+	scaleNum = Math.floor(Math.random() * MAX_SCALE + 1);
 	snow.scaleX = snow.scaleY = scaleNum;
 
 	// direction of rotation
-	let rotateDirecNum = Math.floor(Math.random() * 2 + 1);
+	rotateDirecNum = Math.floor(Math.random() * 2 + 1);
+	rotateDirecNum === 1
+		? (rotateDirecNum = ROTATE_LEFT)
+		: (rotateDirecNum = ROTATE_RIGHT);
+	console.log(rotateDirecNum);
 
 	// acceleration
-	let accelNum = Math.floor(Math.random() * MAX_ACCEL + 1);
+	accelNum = Math.floor(Math.random() * MAX_ACCEL + 1);
 
 	// transparency
-	let alphaNum = Math.floor(
-		Math.random() * (MAX_ALPHA - MIN_ALPHA) + MIN_ALPHA
-	);
-	scaleNum.alpha = alphaNum;
+	alphaNum =
+		Math.floor((Math.random() * (MAX_ALPHA - MIN_ALPHA) + MIN_ALPHA) * 10) / 10;
+	console.log(alphaNum);
+	snow.alpha = alphaNum;
+
+	// radius
+	radiusNum = Math.random() * (MAX_RADIUS - MIN_RADIUS) + MIN_RADIUS;
+
+	// angle
+	angleNum = Math.floor(Math.random() * 360 + 1);
+
+	let ticker = PIXI.ticker.shared;
+	ticker.autoStart = false;
+	ticker.stop();
+
+	PIXI.settings.TARGET_FPMS = 0.06;
+
+	app.ticker.add(tick);
 
 	// Enter Frame
-	app.ticker.add((delta) => {
-		snow.y += 1 + accelNum;
-	});
+	app.ticker.add((delta) => {});
 }
 
-function testAnimation(num) {
-	switch (num) {
-		case 1:
-			anim.animationSpeed = 0.1;
-			anim.gotoAndPlay(1);
-			break;
+function tick(delta) {
+	elapsedTime += delta;
 
-		case 2:
-			anim.animationSpeed = anim_speed * 2;
-			anim.gotoAndPlay(1);
-			break;
-
-		default:
-			break;
+	if (elapsedTime >= fpsDelta) {
+		//enough time passed, update app
+		update(elapsedTime);
+		//reset
+		elapsedTime = 0;
 	}
+}
+
+function update(delta) {
+	// radian
+	let radian = (angleNum * Math.PI) / 180;
+
+	snow.x += radiusNum * Math.cos(radian);
+	snow.y += 1 * accelNum;
+	angleNum += 5;
+
+	// rotate left or right
+	// (if it is possible to determine the direction of rotation like crystals instead of dots)
+	/*
+		if (rotateDirecNum === ROTATE_LEFT) {
+			snow.rotstion -= 10;
+		} else {
+			snow.rotstion = 10;
+		}
+
+    // moved out of screen
+    /*
+		if (HEIGHT + snow.height < snow.height) {
+			// snow.scaleX = snow.scaleY = 1;
+			let xNew = Math.floor(Math.random() * WIDTH + 1);
+			snow.x = xNew;
+			snow.y = -snow.height;
+    }
+    */
+
+	//render the canvas
+	app.render();
 }
