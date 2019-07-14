@@ -150,7 +150,7 @@ function initSnow() {
 	app.ticker.add(tick);
 
 	// Enter Frame
-	app.ticker.add((delta) => {});
+	// app.ticker.add((delta) => {});
 }
 
 function tick(delta) {
@@ -180,16 +180,17 @@ function update(delta) {
 		} else {
 			snow.rotstion = 10;
 		}
+	*/
 
-    // moved out of screen
-    /*
-		if (HEIGHT + snow.height < snow.height) {
-			// snow.scaleX = snow.scaleY = 1;
-			let xNew = Math.floor(Math.random() * WIDTH + 1);
-			snow.x = xNew;
-			snow.y = -snow.height;
-    }
-    */
+	console.log(snow.y);
+
+	// moved out of screen
+	if (HEIGHT + snow.height < snow.y) {
+		// snow.scaleX = snow.scaleY = 1;
+		let xNew = Math.floor(Math.random() * WIDTH + 1);
+		snow.x = xNew;
+		snow.y = -snow.height;
+	}
 
 	//render the canvas
 	app.render();
