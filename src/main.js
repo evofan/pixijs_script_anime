@@ -42,19 +42,15 @@ const ROTATE_LEFT = 1;
 const ROTATE_RIGHT = 2;
 const MAX_NUM = 10;
 const MAX_SCALE = 5;
-const MAX_ACCEL = 5;
-const MIN_ALPHA = 0.5;
+const MAX_ACCEL = 7;
+const MIN_ALPHA = 0.3;
 const MAX_ALPHA = 1;
 const MAX_RADIUS = 5;
 const MIN_RADIUS = 1;
-let xNum,
-	yNum,
-	scaleNum,
-	accelNum,
-	angleNum,
-	rotateDirecNum,
-	alphaNum,
-	radiusNum;
+let snows = [];
+let radiusNums = [];
+let angleNums = [];
+let accelNums = [];
 
 PIXI.loader
 	.add("bg_data", ASSET_BG)
@@ -93,66 +89,66 @@ function onAssetsLoaded(loader, res) {
 		dropShadowColor: "#666666"
 	});
 	container.addChild(text);
-	text.x = 170;
+	text.x = 150;
 	text.y = 20;
 
-	// Snow animation
-	snow = new PIXI.Sprite(res.snow_data.texture);
-	container.addChild(snow);
+	// Snow
+	for (let i = 0; i < MAX_NUM; i++) {
+		let snow = PIXI.Sprite.from(res.snow_data.texture);
 
-	initSnow();
-}
+		// x position
+		let xNum = Math.floor(Math.random() * WIDTH + 1);
+		snow.x = xNum;
 
-/**
- * init snow parameter
- */
-function initSnow() {
-	// x position
-	xNum = Math.floor(Math.random() * WIDTH + 1);
-	snow.x = xNum;
+		// y position
+		let yNum = -Math.floor(Math.random() * 100 + 1);
+		snow.y = yNum;
 
-	// y position
-	yNum = -Math.floor(Math.random() * 100 + 1);
-	snow.y = yNum;
+		// xy scale
+		let scaleNum = Math.floor(Math.random() * MAX_SCALE + 1);
+		snow.scaleX = snow.scaleY = scaleNum;
 
-	// scale
-	scaleNum = Math.floor(Math.random() * MAX_SCALE + 1);
-	snow.scaleX = snow.scaleY = scaleNum;
+		// direction of rotation
+		let rotateDirecNum = Math.floor(Math.random() * 2 + 1);
+		rotateDirecNum === 1
+			? (rotateDirecNum = ROTATE_LEFT)
+			: (rotateDirecNum = ROTATE_RIGHT);
+		console.log(rotateDirecNum);
 
-	// direction of rotation
-	rotateDirecNum = Math.floor(Math.random() * 2 + 1);
-	rotateDirecNum === 1
-		? (rotateDirecNum = ROTATE_LEFT)
-		: (rotateDirecNum = ROTATE_RIGHT);
-	console.log(rotateDirecNum);
+		// acceleration
+		let accelNum = Math.floor(Math.random() * MAX_ACCEL + 1);
+		accelNums.push(accelNum);
 
-	// acceleration
-	accelNum = Math.floor(Math.random() * MAX_ACCEL + 1);
+		// transparency
+		let alphaNum =
+			Math.floor((Math.random() * (MAX_ALPHA - MIN_ALPHA) + MIN_ALPHA) * 10) /
+			10;
+		console.log(alphaNum);
+		snow.alpha = alphaNum;
 
-	// transparency
-	alphaNum =
-		Math.floor((Math.random() * (MAX_ALPHA - MIN_ALPHA) + MIN_ALPHA) * 10) / 10;
-	console.log(alphaNum);
-	snow.alpha = alphaNum;
+		// radius
+		let radiusNum = Math.random() * (MAX_RADIUS - MIN_RADIUS) + MIN_RADIUS;
+		radiusNums.push(radiusNum);
 
-	// radius
-	radiusNum = Math.random() * (MAX_RADIUS - MIN_RADIUS) + MIN_RADIUS;
+		// angle
+		let angleNum = Math.floor(Math.random() * 360 + 1);
+		angleNums.push(angleNum);
 
-	// angle
-	angleNum = Math.floor(Math.random() * 360 + 1);
+		snows.push(snow);
+		container.addChild(snow);
+	}
 
 	let ticker = PIXI.ticker.shared;
 	ticker.autoStart = false;
 	ticker.stop();
-
 	PIXI.settings.TARGET_FPMS = 0.06;
-
 	app.ticker.add(tick);
-
-	// Enter Frame
-	// app.ticker.add((delta) => {});
 }
 
+/**
+ * adjust fps
+ * @param { number } delta time
+ */
 function tick(delta) {
 	elapsedTime += delta;
 
@@ -164,32 +160,37 @@ function tick(delta) {
 	}
 }
 
+/**
+ * app rendering
+ * @param { number } delta  time
+ */
 function update(delta) {
-	// radian
-	let radian = (angleNum * Math.PI) / 180;
+	for (let i = 0; i < MAX_NUM; i++) {
+		// radian
+		let radian = (angleNums[i] * Math.PI) / 180;
 
-	snow.x += radiusNum * Math.cos(radian);
-	snow.y += 1 * accelNum;
-	angleNum += 5;
+		snows[i].x += radiusNums[i] * Math.cos(radian);
 
-	// rotate left or right
-	// (if it is possible to determine the direction of rotation like crystals instead of dots)
-	/*
+		snows[i].y += 1 * accelNums[i];
+		angleNums[i] += 5;
+
+		// rotate left or right
+		// (if it is possible to determine the direction of rotation like crystals instead of dots)
+		/*
 		if (rotateDirecNum === ROTATE_LEFT) {
 			snow.rotstion -= 10;
 		} else {
 			snow.rotstion = 10;
 		}
-	*/
+		*/
 
-	console.log(snow.y);
-
-	// moved out of screen
-	if (HEIGHT + snow.height < snow.y) {
-		// snow.scaleX = snow.scaleY = 1;
-		let xNew = Math.floor(Math.random() * WIDTH + 1);
-		snow.x = xNew;
-		snow.y = -snow.height;
+		// moved out of screen
+		if (HEIGHT + snows[i].height < snows[i].y) {
+			// snow.scaleX = snow.scaleY = 1;
+			let xNew = Math.floor(Math.random() * WIDTH + 1);
+			snows[i].x = xNew;
+			snows[i].y = -snows[i].height;
+		}
 	}
 
 	//render the canvas
