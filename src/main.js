@@ -86,7 +86,8 @@ function onAssetsLoaded(loader, res) {
 		stroke: "#000000",
 		strokeThickness: 4,
 		dropShadow: false,
-		dropShadowColor: "#666666"
+		dropShadowColor: "#666666",
+		lineJoin: "round"
 	});
 	container.addChild(text);
 	text.x = 150;
